@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國小校務教學行政與鐘點代課整合系統 (Modular School Administrative Suite)</title>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏫</text></svg>">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- 側邊導航欄 (Sidebar) -->
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <div class="app-brand">
+          <div class="brand-icon">🏫</div>
+          <div class="brand-info">
+            <h1>校務教學行政</h1>
+            <span>鐘點代課與核銷系統</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">核心業務模組</div>
+        <a class="nav-item active" data-route="dashboard">
+          <span class="nav-icon">📊</span>
+          <span>總覽儀表板</span>
+        </a>
+        <a class="nav-item" data-route="substitute">
+          <span class="nav-icon">⚡</span>
+          <span>智慧排代與找人</span>
+          <span class="nav-badge">空堂媒合</span>
+        </a>
+        <a class="nav-item" data-route="timetable">
+          <span class="nav-icon">🏫</span>
+          <span>課表矩陣與匯入</span>
+        </a>
+        <a class="nav-item" data-route="teachers">
+          <span class="nav-icon">👥</span>
+          <span>教師與人才庫</span>
+        </a>
+        <a class="nav-item" data-route="settlement">
+          <span class="nav-icon">💵</span>
+          <span>經費核算 DataGrid</span>
+          <span class="nav-badge">保費微調</span>
+        </a>
+
+        <div class="nav-section-title">範本建庫與功能自訂</div>
+        <a class="nav-item" data-route="template-manager">
+          <span class="nav-icon">📥</span>
+          <span>空白範本與批次匯入</span>
+        </a>
+        <a class="nav-item" data-route="form-config">
+          <span class="nav-icon">✏️</span>
+          <span>表單名稱與功能設定</span>
+        </a>
+        <a class="nav-item" data-route="budget-plans">
+          <span class="nav-icon">💳</span>
+          <span>經費計畫與科目</span>
+        </a>
+
+        <div class="nav-section-title">說明書與資料安全</div>
+        <a class="nav-item" data-route="user-guide">
+          <span class="nav-icon">📖</span>
+          <span>系統使用說明書</span>
+        </a>
+        <a class="nav-item" onclick="window.app.openBackupModal()">
+          <span class="nav-icon">💾</span>
+          <span>JSON 備份與還原</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-secondary btn-sm w-full" onclick="window.app.loadDemoData()">
+          <span>🔄 載入 6月份範例情境</span>
+        </button>
+        <div class="text-xs text-muted text-center mt-2" style="font-size: 0.68rem;">
+          離線安全架構 v2.5 (即時自動存檔)
+        </div>
+      </div>
+    </aside>
+
+    <!-- 主工作區 (Main) -->
+    <main class="app-main">
+      <!-- 頂部狀態列 (Header) -->
+      <header class="app-header">
+        <div class="header-left">
+          <span class="font-bold" id="header-school-name" style="font-size: 0.82rem; color: var(--text-secondary);">
+            新北市新林國民小學 114學年度第2學期 (6月份)
+          </span>
+          <span id="auto-save-indicator"><span class="auto-save-dot"></span> 即時自動存檔中</span>
+        </div>
+
+        <div class="header-right">
+          <button class="btn btn-secondary btn-sm" onclick="window.app.navigate('user-guide')">
+            <span>📖 使用說明書</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="window.app.openBackupModal()">
+            <span>💾 資料備份</span>
+          </button>
+          <button class="btn btn-emerald btn-sm" onclick="ExcelGeneratorModule.exportOfficialWorkbook()">
+            <span>📑 匯出官方印領清冊 Excel</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- 動態模組掛載容器 -->
+      <div id="module-container" class="content-wrapper"></div>
+    </main>
+  </div>
+
+  <!-- 全域通用 Modal -->
+  <div id="app-modal" class="modal-backdrop">
+    <div id="modal-dialog" class="modal-dialog">
+      <div class="modal-header">
+        <div id="modal-title" class="modal-title">標題</div>
+        <button class="btn btn-secondary btn-icon" onclick="window.app.closeModal()">✕</button>
+      </div>
+      <div id="modal-body" class="modal-body"></div>
+      <div id="modal-footer" class="modal-footer"></div>
+    </div>
+  </div>
+
+  <!-- 全域 Toast 通知容器 -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- 離線與本地腳本載入 -->
+  <script src="js/vendor/dexie.min.js"></script>
+  <script src="js/vendor/exceljs.min.js"></script>
+  <script src="js/vendor/xlsx.full.min.js"></script>
+
+  <!-- 資料庫與範例資料模組 -->
+  <script src="js/db.js"></script>
+  <script src="js/demo-data.js"></script>
+
+  <!-- 核心業務模組 -->
+  <script src="js/modules/dashboard.js"></script>
+  <script src="js/modules/teachers.js"></script>
+  <script src="js/modules/timetable.js"></script>
+  <script src="js/modules/substitute.js"></script>
+  <script src="js/modules/budget-plans.js"></script>
+  <script src="js/modules/settlement.js"></script>
+  <script src="js/modules/template-manager.js"></script>
+  <script src="js/modules/form-config.js"></script>
+  <script src="js/modules/user-guide.js"></script>
+  <script src="js/modules/excel-generator.js"></script>
+
+  <!-- 應用程式主控制器 -->
+  <script src="js/app.js"></script>
+
+</body>
+</html>
